@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tarea_7/Screens/LoginScreen.dart';
-import 'package:tarea_7/listeners/provider_theme.dart';
+import 'package:tarea_7/listeners/provider_nav.dart';
+import 'package:tarea_7/utils/NavigationNavBar.dart';
+
+import 'listeners/provider_theme.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => NavProvider()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -21,10 +26,8 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const LoginS(),
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
-      themeMode: themeProvider.themeMode,
+      theme: themeProvider.isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      home: const MainNavigationS(),
     );
   }
 }
