@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:tarea_7/Screens/CentrosRecargaS.dart';
 import 'package:tarea_7/Screens/HomeScreen.dart';
 import 'package:tarea_7/Screens/ProfileInfScreen.dart';
-import 'package:tarea_7/Screens/RutaInfScreen.dart';
+import 'package:tarea_7/Screens/RutasInfScreen.dart';
 import 'package:tarea_7/Screens/SearchScreen.dart';
 import 'package:tarea_7/Screens/SubscriptionScreen.dart';
 import 'package:tarea_7/listeners/provider_nav.dart';

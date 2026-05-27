@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tarea_7/listeners/provider_nav.dart';
+import 'package:tarea_7/listeners/provider_searchRutas.dart';
 import 'package:tarea_7/utils/NavigationNavBar.dart';
 
 import 'listeners/provider_theme.dart';
@@ -11,6 +12,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => NavProvider()),
+        ChangeNotifierProvider(create: (_) => RutasProvider()),
       ],
       child: const MyApp(),
     ),
