@@ -7,6 +7,7 @@ import 'package:tarea_7/Screens/RutasInfScreen.dart';
 import 'package:tarea_7/Screens/SearchScreen.dart';
 import 'package:tarea_7/Screens/SubscriptionScreen.dart';
 import 'package:tarea_7/listeners/provider_nav.dart';
+import 'package:tarea_7/stripe/pay_through_stripe_screen.dart';
 import 'package:tarea_7/widgets/NavBar.dart';
 
 class MainNavigationS extends StatelessWidget {
@@ -21,7 +22,7 @@ class MainNavigationS extends StatelessWidget {
       const RutasInfS(),
       const SearchS(),
       const ProfileInfS(),
-      const SubscriptionS(),
+      const PayScreen(),
       const CentrosRecargasS(),
     ];
 
