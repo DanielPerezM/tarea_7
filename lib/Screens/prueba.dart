@@ -1,14 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:local_hero_transform/local_hero_transform.dart';
 
-class RutasInfS extends StatefulWidget {
-  const RutasInfS({super.key});
-
-  @override
-  State<RutasInfS> createState() => _RutasInfSState();
+void main() {
+  runApp(const Prueba());
 }
 
-class _RutasInfSState extends State<RutasInfS>
+class Prueba extends StatelessWidget {
+  const Prueba({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Rutas',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.light().copyWith(
+        scaffoldBackgroundColor: AppColors.backgroundColor,
+      ),
+      home: const MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   late final ValueNotifier<FavoriteShape> _viewModeNotifier;
@@ -38,21 +58,22 @@ class _RutasInfSState extends State<RutasInfS>
       ..dispose();
 
     _viewModeNotifier.dispose();
+
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
-      appBar: _buildAppBar(context),
-      body: LocalHeroViews(
-        tabController: _tabController,
-        onPressedCard: _handleCardPressed,
-        textDirection: TextDirection.ltr,
-        itemCount: locations.length,
-        itemsModel: _buildItemsModel,
-      ),
+    return Scaffold(appBar: _buildAppBar(context), body: _buildBody());
+  }
+
+  Widget _buildBody() {
+    return LocalHeroViews(
+      tabController: _tabController,
+      onPressedCard: _handleCardPressed,
+      textDirection: TextDirection.ltr,
+      itemCount: locations.length,
+      itemsModel: _buildItemsModel,
     );
   }
 
@@ -73,6 +94,7 @@ class _RutasInfSState extends State<RutasInfS>
     final textTheme = _buildTextTheme();
 
     return ItemsModel(
+      favoriteIconButton: const SizedBox.shrink(),
       cardStyleMode: CardStyleMode(isDarkMode: false, isLoading: false),
       loadingImageBuilder: (context, child, loadingProgress) {
         return const CustomShimmer(isDark: false);
@@ -89,7 +111,6 @@ class _RutasInfSState extends State<RutasInfS>
         color: AppColors.subtitleColor,
         size: MediaQuery.sizeOf(context).width * 0.03,
       ),
-      favoriteIconButton: const SizedBox.shrink(),
     );
   }
 
@@ -115,8 +136,8 @@ class _RutasInfSState extends State<RutasInfS>
 
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
-      backgroundColor: AppColors.backgroundColor,
-      surfaceTintColor: AppColors.backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      surfaceTintColor: Theme.of(context).scaffoldBackgroundColor,
       title: const Text(
         'Rutas disponibles',
         style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
@@ -135,25 +156,31 @@ class _RutasInfSState extends State<RutasInfS>
       valueListenable: _viewModeNotifier,
       builder: (context, value, _) => ConstrainedBox(
         constraints: BoxConstraints.tight(Size(35, 35)),
-        child: RawMaterialButton(
-          onPressed: _toggleView,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            side: const BorderSide(color: Colors.black, width: 0.2),
-            borderRadius: BorderRadius.circular(5),
-          ),
-          fillColor: Colors.blue,
-          child: Icon(
-            value == FavoriteShape.grid
-                ? Icons.grid_view_rounded
-                : Icons.view_agenda_outlined,
-            size: 16,
-            color: Colors.white,
+        child: AspectRatio(
+          aspectRatio: 1.9 / 2,
+          child: RawMaterialButton(
+            onPressed: _toggleView,
+            elevation: 0,
+            visualDensity: const VisualDensity(vertical: -4, horizontal: -4),
+            shape: _buttonShape,
+            fillColor: Colors.blue,
+            child: Icon(
+              value == FavoriteShape.grid
+                  ? Icons.grid_view_rounded
+                  : Icons.view_agenda_outlined,
+              size: 16,
+              color: Colors.white,
+            ),
           ),
         ),
       ),
     );
   }
+
+  final _buttonShape = RoundedRectangleBorder(
+    side: const BorderSide(color: Colors.black, width: 0.2),
+    borderRadius: BorderRadius.circular(5),
+  );
 
   void _toggleView() {
     final newIndex = _tabController.index == 0 ? 1 : 0;
@@ -189,9 +216,8 @@ class DetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.orange,
+        backgroundColor: Colors.indigoAccent,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(name, style: const TextStyle(color: Colors.white)),
       ),

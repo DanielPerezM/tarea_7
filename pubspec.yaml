@@ -39,6 +39,7 @@ dependencies:
   google_nav_bar: ^5.0.7
   line_icons: ^2.0.3
   floating_navbar: ^3.0.0
+  local_hero_transform: ^1.0.6
 
 dev_dependencies:
   flutter_test:
