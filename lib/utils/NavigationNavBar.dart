@@ -6,6 +6,7 @@ import 'package:tarea_7/Screens/ProfileInfScreen.dart';
 import 'package:tarea_7/Screens/RutasInfScreen.dart';
 import 'package:tarea_7/Screens/SearchScreen.dart';
 import 'package:tarea_7/Screens/SubscriptionScreen.dart';
+import 'package:tarea_7/Screens/prueba.dart';
 import 'package:tarea_7/listeners/provider_nav.dart';
 import 'package:tarea_7/stripe/pay_through_stripe_screen.dart';
 import 'package:tarea_7/widgets/NavBar.dart';
@@ -18,7 +19,7 @@ class MainNavigationS extends StatelessWidget {
     final navProvider = Provider.of<NavProvider>(context);
 
     final screens = [
-      const HomeS(),
+      Prueba(title: 'Prueba de pantalla'),
       const RutasInfS(),
       const SearchS(),
       const ProfileInfS(),

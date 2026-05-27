@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:local_hero_transform/local_hero_transform.dart';
 import 'package:provider/provider.dart';
 import 'package:tarea_7/Screens/prueba.dart';
-import 'package:tarea_7/listeners/provider_searchRutas.dart' hide FavoriteShape;
+import 'package:tarea_7/listeners/provider_searchRutas.dart';
 
 class RutasInfS extends StatefulWidget {
   const RutasInfS({super.key});
