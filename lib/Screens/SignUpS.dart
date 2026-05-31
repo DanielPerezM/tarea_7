@@ -1,8 +1,140 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:tarea_7/Screens/newProfile.dart';
+import 'package:tarea_7/Screens/verifyNumS.dart';
+import 'package:tarea_7/methods.dart';
 
-class SignUpS extends StatelessWidget {
+class SignUpS extends StatefulWidget {
   const SignUpS({super.key});
+
+  @override
+  State<SignUpS> createState() => _SignUpSState();
+}
+
+class _SignUpSState extends State<SignUpS> {
+  final TextEditingController _name = TextEditingController();
+  final TextEditingController _email = TextEditingController();
+  final TextEditingController _phone = TextEditingController();
+  final TextEditingController _password = TextEditingController();
+  final TextEditingController _confirmPassword = TextEditingController();
+  bool registerByPhone = false;
+
+  bool isLoading = false;
+  bool obscurePassword = true;
+  bool obscureConfirmPassword = true;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _email.dispose();
+    _phone.dispose();
+    _password.dispose();
+    _confirmPassword.dispose();
+    super.dispose();
+  }
+
+  void showMessage(String text) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(text, textAlign: TextAlign.center)));
+  }
+
+  Future<void> registerWithEmail() async {
+    if (_email.text.trim().isEmpty ||
+        _password.text.trim().isEmpty ||
+        _confirmPassword.text.trim().isEmpty) {
+      showMessage('Completa correo y contraseña');
+      return;
+    }
+
+    if (_password.text.trim() != _confirmPassword.text.trim()) {
+      showMessage('Las contraseñas no coinciden');
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    final user = await AuthMethods().registerWithEmail(
+      userName: '',
+      email: _email.text.trim(),
+      phone: '',
+      password: _password.text.trim(),
+    );
+
+    if (!mounted) return;
+
+    setState(() => isLoading = false);
+
+    if (user == null) {
+      showMessage('No se pudo crear la cuenta');
+      return;
+    }
+
+    await user.sendEmailVerification();
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => verifyNumS(
+          userName: '',
+          email: _email.text.trim(),
+          phone: '',
+          isRegister: true,
+          isEmailVerification: true,
+        ),
+      ),
+    );
+  }
+
+  Future<void> registerWithPhone() async {
+    if (_phone.text.trim().isEmpty) {
+      showMessage('Ingresa número de celular');
+      return;
+    }
+
+    final phone = _phone.text.trim();
+    final formattedPhone = phone.startsWith('+52') ? phone : '+52$phone';
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => verifyNumS(
+          userName: '',
+          email: '',
+          phone: formattedPhone,
+          isRegister: true,
+          isEmailVerification: false,
+        ),
+      ),
+    );
+  }
+
+  Future<void> registerWithGoogle() async {
+    setState(() => isLoading = true);
+
+    final user = await AuthMethods().signInWithGoogle();
+
+    if (!mounted) return;
+
+    setState(() => isLoading = false);
+
+    if (user == null) {
+      showMessage('No se pudo registrar con Google');
+      return;
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => newProfileS(
+          userName: user.displayName ?? '',
+          email: user.email ?? '',
+          phone: user.phoneNumber ?? '',
+          avatarUrl: user.photoURL ?? '',
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +199,20 @@ class SignUpS extends StatelessWidget {
                               ],
                             ),
                           ),
-
+                          const SizedBox(height: 20),
+                          SwitchListTile(
+                            value: registerByPhone,
+                            activeColor: Colors.orange.shade900,
+                            title: const Text(
+                              'Registrarme por celular',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                registerByPhone = value;
+                              });
+                            },
+                          ),
                           const SizedBox(height: 20),
 
                           Container(
@@ -109,6 +254,7 @@ class SignUpS extends StatelessWidget {
                                       ),
                                       child: Column(
                                         children: <Widget>[
+                                          // CORREO
                                           Container(
                                             padding: const EdgeInsets.all(10),
                                             decoration: BoxDecoration(
@@ -118,23 +264,26 @@ class SignUpS extends StatelessWidget {
                                                 ),
                                               ),
                                             ),
-                                            child: const TextField(
+                                            child: TextField(
+                                              controller: _email,
+                                              enabled: !registerByPhone,
                                               keyboardType:
                                                   TextInputType.emailAddress,
                                               decoration: InputDecoration(
-                                                prefixIcon: Icon(
+                                                prefixIcon: const Icon(
                                                   Icons.email_outlined,
                                                 ),
-                                                hintText:
-                                                    "Correo o número de celular",
-                                                hintStyle: TextStyle(
-                                                  color: Colors.grey,
-                                                ),
+                                                hintText: "Correo electrónico",
+                                                filled: true,
+                                                fillColor: registerByPhone
+                                                    ? Colors.grey.shade300
+                                                    : Colors.white,
                                                 border: InputBorder.none,
                                               ),
                                             ),
                                           ),
 
+                                          // CELULAR
                                           Container(
                                             padding: const EdgeInsets.all(10),
                                             decoration: BoxDecoration(
@@ -144,35 +293,93 @@ class SignUpS extends StatelessWidget {
                                                 ),
                                               ),
                                             ),
-                                            child: const TextField(
-                                              obscureText: true,
+                                            child: TextField(
+                                              controller: _phone,
+                                              enabled: registerByPhone,
+                                              keyboardType: TextInputType.phone,
                                               decoration: InputDecoration(
-                                                prefixIcon: Icon(
-                                                  Icons.lock_outline,
+                                                prefixIcon: const Icon(
+                                                  Icons.phone_outlined,
                                                 ),
-                                                hintText: "Crear contraseña",
-                                                hintStyle: TextStyle(
-                                                  color: Colors.grey,
-                                                ),
+                                                hintText: "Número de celular",
+                                                filled: true,
+                                                fillColor: registerByPhone
+                                                    ? Colors.white
+                                                    : Colors.grey.shade300,
                                                 border: InputBorder.none,
                                               ),
                                             ),
                                           ),
 
+                                          // CONTRASEÑA
                                           Container(
                                             padding: const EdgeInsets.all(10),
-                                            child: const TextField(
-                                              obscureText: true,
+                                            decoration: BoxDecoration(
+                                              border: Border(
+                                                bottom: BorderSide(
+                                                  color: Colors.grey.shade200,
+                                                ),
+                                              ),
+                                            ),
+                                            child: TextField(
+                                              controller: _password,
+                                              obscureText: obscurePassword,
                                               decoration: InputDecoration(
-                                                prefixIcon: Icon(
+                                                prefixIcon: const Icon(
+                                                  Icons.lock_outline,
+                                                ),
+                                                hintText: "Crear contraseña",
+                                                hintStyle: const TextStyle(
+                                                  color: Colors.grey,
+                                                ),
+                                                border: InputBorder.none,
+                                                suffixIcon: IconButton(
+                                                  icon: Icon(
+                                                    obscurePassword
+                                                        ? Icons.visibility_off
+                                                        : Icons.visibility,
+                                                  ),
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      obscurePassword =
+                                                          !obscurePassword;
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+
+                                          // CONFIRMAR CONTRASEÑA
+                                          Container(
+                                            padding: const EdgeInsets.all(10),
+                                            child: TextField(
+                                              controller: _confirmPassword,
+                                              obscureText:
+                                                  obscureConfirmPassword,
+                                              decoration: InputDecoration(
+                                                prefixIcon: const Icon(
                                                   Icons.lock_reset_outlined,
                                                 ),
                                                 hintText:
                                                     "Confirmar contraseña",
-                                                hintStyle: TextStyle(
+                                                hintStyle: const TextStyle(
                                                   color: Colors.grey,
                                                 ),
                                                 border: InputBorder.none,
+                                                suffixIcon: IconButton(
+                                                  icon: Icon(
+                                                    obscureConfirmPassword
+                                                        ? Icons.visibility_off
+                                                        : Icons.visibility,
+                                                  ),
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      obscureConfirmPassword =
+                                                          !obscureConfirmPassword;
+                                                    });
+                                                  },
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -191,7 +398,13 @@ class SignUpS extends StatelessWidget {
                                       width: double.infinity,
                                       height: 50,
                                       child: MaterialButton(
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          if (registerByPhone) {
+                                            registerWithPhone();
+                                          } else {
+                                            registerWithEmail();
+                                          }
+                                        },
                                         color: Colors.orange[900],
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(

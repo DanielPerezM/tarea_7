@@ -48,7 +48,17 @@ dependencies:
   firebase_core: ^4.9.0
   firebase_auth: ^6.5.1
   cloud_firestore: ^6.4.1
-  google_sign_in: ^7.2.0
+  google_sign_in: ^6.3.0
+  geolocator: ^14.0.2
+  geocoding: ^4.0.0
+  image_pickers: ^2.0.6
+  supabase_flutter: ^2.12.4
+  image_picker: ^1.1.2
+  cached_network_image: ^3.4.1
+  firebase_messaging: ^16.2.2
+
+  
+  
   
 
 dev_dependencies:
@@ -69,7 +79,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/gifs
+  #  - assets/gifs
     #assets/images/perfil1.jpg   -- ruta para mostrar los gifs 
   #   - images/a_dot_ham.jpeg
 

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+/*import 'package:flutter/material.dart';
 
 class RutaInfScreen extends StatelessWidget {
   const RutaInfScreen({
@@ -203,3 +203,4 @@ class RutaInfScreen extends StatelessWidget {
     );
   }
 }
+*/

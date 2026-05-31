@@ -1,213 +1,205 @@
-/*import 'package:clon_wsp/Screens/loginS.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-/// ==============================
-/// CREAR CUENTA
-/// ==============================
-Future<User?> createAccount(
-  String userName,
-  String email,
-  String password,
-  String phone,
-  bool isProfessor,
-) async {
-  FirebaseAuth auth = FirebaseAuth.instance;
+class AuthMethods {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-  try {
-    UserCredential userCredential = await auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-
-    await userCredential.user!.updateDisplayName(userName);
-
-    await firestore.collection('users').doc(userCredential.user!.uid).set({
-      "uid": userCredential.user!.uid,
-
-      // Compatibilidad tutorial viejo
-      "name": userName,
-
-      // Nuevo nombre
-      "userName": userName,
-
-      "email": email,
-
-      "phone": phone,
-
-      "isProfessor": isProfessor,
-
-      "avatarUrl": "",
-
-      "status": "Offline",
-    });
-
-    debugPrint("Usuario creado correctamente");
-
-    return userCredential.user;
-  } catch (e) {
-    debugPrint("Error creando cuenta: $e");
-
-    return null;
-  }
-}
-
-/// ==============================
-/// LOGIN
-/// ==============================
-Future<User?> logIn(String email, String password) async {
-  FirebaseAuth auth = FirebaseAuth.instance;
-
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-  try {
-    /// Iniciar sesión
-    UserCredential userCredential = await auth.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-
-    debugPrint("Login correcto");
-
+  Future<User?> registerWithEmail({
+    required String userName,
+    required String email,
+    required String phone,
+    required String password,
+  }) async {
     try {
-      /// Obtener datos del usuario desde Firestore
-      DocumentSnapshot userData = await firestore
-          .collection('users')
-          .doc(auth.currentUser!.uid)
-          .get();
+      final credential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-      /// Verificar si el documento existe
-      if (userData.exists) {
-        String name = userData['name'];
+      final user = credential.user;
 
-        /// Actualizar displayName
-        await userCredential.user!.updateDisplayName(name);
+      if (user != null) {
+        await user.updateDisplayName(userName);
+
+        await _firestore.collection('users').doc(user.uid).set({
+          'userName': userName,
+          'email': email,
+          'phone': phone,
+          'avatarUrl': '',
+          'subscription': 'free',
+        });
       }
+
+      return user;
     } catch (e) {
-      debugPrint("Error obteniendo datos usuario: $e");
+      debugPrint('Error registro: $e');
+      return null;
     }
-
-    return userCredential.user;
-  } catch (e) {
-    debugPrint("Error login: $e");
-    return null;
   }
-}
 
-/// ==============================
-/// LOGOUT
-/// ==============================
-Future<void> logOut(BuildContext context) async {
-  FirebaseAuth auth = FirebaseAuth.instance;
-  GoogleSignIn googleSignIn = GoogleSignIn();
+  Future<User?> loginWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-  try {
-    await googleSignIn.signOut();
-    await auth.signOut();
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => LoginS()),
-      (route) => false,
-    );
-
-    debugPrint("Sesión cerrada");
-  } catch (e) {
-    debugPrint("Error al cerrar sesión: $e");
+      return credential.user;
+    } catch (e) {
+      debugPrint('Error login: $e');
+      return null;
+    }
   }
-}
 
-//si se ingresa con el numero de celular, se busca el correo ligado a es numeor y con ello da acceso
-Future<User?> logInWithEmailOrPhone(
-  String emailOrPhone,
-  String password,
-) async {
-  FirebaseAuth auth = FirebaseAuth.instance;
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  Future<User?> signInWithGoogle() async {
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn();
 
-  try {
-    String input = emailOrPhone.trim();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
-    bool isEmail = input.contains("@");
+      if (googleUser == null) {
+        debugPrint("Login con Google cancelado");
+        return null;
+      }
 
-    String emailToLogin = input;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
-    if (!isEmail) {
-      QuerySnapshot result = await firestore
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential = await _auth.signInWithCredential(credential);
+
+      return userCredential.user;
+    } catch (e) {
+      debugPrint("Error Google Sign-In: $e");
+      return null;
+    }
+  }
+
+  Future<void> logout() async {
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+
+      await googleSignIn.signOut();
+      await FirebaseAuth.instance.signOut();
+    } catch (e) {
+      debugPrint('Error al cerrar sesión: $e');
+    }
+  }
+
+  Future<User?> loginWithPhone({
+    required String phone,
+    required String password,
+  }) async {
+    try {
+      String formattedPhone = phone.trim();
+
+      if (!formattedPhone.startsWith('+52')) {
+        formattedPhone = '+52$formattedPhone';
+      }
+
+      final result = await _firestore
           .collection('users')
-          .where("phone", isEqualTo: input)
+          .where('phone', isEqualTo: formattedPhone)
           .limit(1)
           .get();
 
       if (result.docs.isEmpty) {
-        debugPrint("No existe usuario con ese número");
         return null;
       }
 
-      final data = result.docs.first.data() as Map<String, dynamic>;
-      emailToLogin = data['email'];
-    }
+      final userData = result.docs.first.data();
 
-    UserCredential userCredential = await auth.signInWithEmailAndPassword(
-      email: emailToLogin,
-      password: password,
-    );
+      final email = userData['email'];
 
-    return userCredential.user;
-  } catch (e) {
-    debugPrint("Error login email/teléfono: $e");
-    return null;
-  }
-}
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-Future<User?> registerWithEmailPassword(String email, String password) async {
-  FirebaseAuth auth = FirebaseAuth.instance;
-
-  try {
-    UserCredential userCredential = await auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-
-    return userCredential.user;
-  } catch (e) {
-    debugPrint("Error registro auth: $e");
-
-    return null;
-  }
-}
-
-Future<User?> signInWithGoogle() async {
-  FirebaseAuth auth = FirebaseAuth.instance;
-
-  try {
-    final GoogleSignIn googleSignIn = GoogleSignIn();
-
-    final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-
-    if (googleUser == null) {
-      debugPrint("Login con Google cancelado");
+      return credential.user;
+    } catch (e) {
+      debugPrint('Error login teléfono: $e');
       return null;
     }
+  }
 
-    final GoogleSignInAuthentication googleAuth =
-        await googleUser.authentication;
+  Future<User?> loginWithEmailOrPhone({
+    required String emailOrPhone,
+    required String password,
+  }) async {
+    try {
+      String input = emailOrPhone.trim();
+      String emailToLogin = input;
 
-    final AuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
+      if (!input.contains('@')) {
+        final result = await _firestore
+            .collection('users')
+            .where('phone', isEqualTo: input)
+            .limit(1)
+            .get();
+
+        if (result.docs.isEmpty) return null;
+
+        emailToLogin = result.docs.first.data()['email'];
+      }
+
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: emailToLogin,
+        password: password,
+      );
+
+      return credential.user;
+    } catch (e) {
+      debugPrint('Error login email/teléfono: $e');
+      return null;
+    }
+  }
+
+  Future<void> sendPhoneCode({
+    required String phone,
+    required Function(String verificationId) codeSent,
+    required Function(String error) onError,
+  }) async {
+    await _auth.verifyPhoneNumber(
+      phoneNumber: phone,
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        await _auth.signInWithCredential(credential);
+      },
+      verificationFailed: (FirebaseAuthException e) {
+        onError(e.message ?? 'Error al verificar número');
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        codeSent(verificationId);
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {},
     );
+  }
 
-    UserCredential userCredential = await auth.signInWithCredential(credential);
+  Future<User?> verifySmsCode({
+    required String verificationId,
+    required String smsCode,
+  }) async {
+    try {
+      final credential = PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: smsCode,
+      );
 
-    return userCredential.user;
-  } catch (e) {
-    debugPrint("Error Google Sign-In: $e");
-    return null;
+      final userCredential = await _auth.signInWithCredential(credential);
+      return userCredential.user;
+    } catch (e) {
+      debugPrint('Error verificando código: $e');
+      return null;
+    }
   }
 }
-*/
