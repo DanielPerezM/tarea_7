@@ -56,11 +56,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-@pragma('vm:entry-point')
-Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  debugPrint('===== NOTIFICACIÓN EN BACKGROUND =====');
-  debugPrint('Título: ${message.notification?.title}');
-  debugPrint('Body: ${message.notification?.body}');
-  debugPrint('Data: ${message.data}');
-}

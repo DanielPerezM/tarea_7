@@ -31,20 +31,13 @@ class NavBarW extends StatelessWidget {
             children: [
               _NavItem(
                 index: 0,
-                icon: Icons.home_outlined,
-                title: 'Home',
-                selectedIndex: navProvider.selectedIndex,
-                onTap: navProvider.changeScreen,
-              ),
-              _NavItem(
-                index: 1,
                 icon: Icons.route_outlined,
                 title: 'Rutas',
                 selectedIndex: navProvider.selectedIndex,
                 onTap: navProvider.changeScreen,
               ),
               _NavItem(
-                index: 2,
+                index: 1,
                 icon: Icons.search,
                 title: 'Buscar',
                 selectedIndex: navProvider.selectedIndex,
@@ -52,22 +45,23 @@ class NavBarW extends StatelessWidget {
               ),
               _NavItem(
                 index: 3,
+                icon: Icons.account_balance_wallet_outlined,
+                title: 'Recargas',
+                selectedIndex: navProvider.selectedIndex,
+                onTap: navProvider.changeScreen,
+              ),
+              _NavItem(
+                index: 2,
                 icon: Icons.person_outline,
                 title: 'Perfil',
                 selectedIndex: navProvider.selectedIndex,
                 onTap: navProvider.changeScreen,
               ),
+
               _NavItem(
                 index: 4,
                 icon: Icons.workspace_premium_outlined,
                 title: 'Premium',
-                selectedIndex: navProvider.selectedIndex,
-                onTap: navProvider.changeScreen,
-              ),
-              _NavItem(
-                index: 5,
-                icon: Icons.account_balance_wallet_outlined,
-                title: 'Recargas',
                 selectedIndex: navProvider.selectedIndex,
                 onTap: navProvider.changeScreen,
               ),
