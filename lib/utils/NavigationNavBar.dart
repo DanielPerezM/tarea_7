@@ -19,12 +19,12 @@ class MainNavigationS extends StatelessWidget {
     final navProvider = Provider.of<NavProvider>(context);
 
     final screens = [
-      Prueba(),
+      //Prueba(),
       const RutasInfS(),
       const SearchS(),
+      const CentrosRecargasS(),
       const ProfileInfS(),
       const SubscriptionS(),
-      const CentrosRecargasS(),
     ];
 
     return Scaffold(
