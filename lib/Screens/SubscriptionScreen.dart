@@ -103,9 +103,13 @@ class _SubscriptionSState extends State<SubscriptionS> {
         context,
       ).showSnackBar(SnackBar(content: Text('Pago exitoso: $membershipName')));
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error en el pago: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Error al realizar el pago. Por favor, intente de nuevo',
+          ),
+        ),
+      );
     }
   }
 }
